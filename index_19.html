@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0a0e13" />
+<title>Sri Nithya Anne — Security Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#090c13;
+    --panel:#121726;
+    --panel-raised:#1a2136;
+    --line:#272f45;
+    --signal:#45e6cc;
+    --signal-dim:#1d4a48;
+    --violet:#9c8bff;
+    --violet-dim:#332d5c;
+    --ember:#ff7a5c;
+    --amber:#ffc154;
+    --text-hi:#eef2f8;
+    --text-lo:#8f9ab0;
+    --font-display:"Space Grotesk", sans-serif;
+    --font-body:"Inter", sans-serif;
+    --font-mono:"JetBrains Mono", monospace;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--ink);
+    color:var(--text-hi);
+    font-family:var(--font-body);
+    line-height:1.65;
+    overflow-x:hidden;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+  a{color:inherit;text-decoration:none;}
+  .wrap{width:min(1180px, calc(100% - 2.5rem));margin:0 auto;}
+  ::selection{background:var(--signal-dim);color:var(--text-hi);}
+  .icon{display:inline-flex;flex-shrink:0;}
+  .icon svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+
+  .scanline-bg{
+    position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.5;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(79,216,196,0.02) 0px,
+      rgba(79,216,196,0.02) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+  .scan-sweep{
+    position:fixed;left:0;right:0;height:140px;z-index:0;pointer-events:none;
+    background:linear-gradient(to bottom, transparent, rgba(79,216,196,0.05), transparent);
+    animation:sweep 9s linear infinite;
+  }
+  @keyframes sweep{
+    0%{top:-140px;}
+    100%{top:100vh;}
+  }
+
+  header{
+    position:sticky;top:0;z-index:100;
+    background:rgba(10,14,19,0.82);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  nav{display:flex;align-items:center;justify-content:space-between;min-height:66px;}
+  .brand{font-family:var(--font-display);font-weight:700;font-size:1.05rem;}
+  .brand span{color:var(--signal);}
+  .nav-links{display:flex;gap:0.4rem;list-style:none;}
+  .nav-links a{padding:0.5rem 0.85rem;border-radius:999px;font-size:0.88rem;color:var(--text-lo);transition:.18s ease;}
+  .nav-links a:hover{color:var(--text-hi);background:rgba(255,255,255,0.04);}
+  .nav-cta{font-family:var(--font-mono);font-size:0.82rem;padding:0.5rem 0.95rem;border-radius:999px;border:1px solid var(--signal-dim);color:var(--signal);}
+  .nav-cta:hover{background:rgba(79,216,196,0.08);}
+  @media (max-width:820px){.nav-links{display:none;}}
+
+  .hero{position:relative;padding:4.5rem 0 3.5rem;overflow:hidden;}
+  .hero-grid{display:grid;grid-template-columns:1.05fr 0.95fr;gap:2rem;align-items:center;position:relative;z-index:2;}
+  #graph-canvas{width:100%;height:520px;display:block;}
+  @media (max-width:980px){.hero-grid{grid-template-columns:1fr;}#graph-canvas{height:320px;}}
+
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:0.5rem;font-family:var(--font-mono);font-size:0.78rem;
+    letter-spacing:0.06em;color:var(--signal);border:1px solid var(--signal-dim);padding:0.4rem 0.75rem;
+    border-radius:999px;margin-bottom:1.1rem;background:rgba(79,216,196,0.06);
+  }
+  .eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--signal);box-shadow:0 0 8px var(--signal);animation:blip 2s ease-in-out infinite;}
+  @keyframes blip{0%,100%{opacity:1;}50%{opacity:0.35;}}
+
+  .id-badge{display:flex;align-items:center;gap:0.9rem;margin-bottom:1.3rem;}
+  .id-photo{
+    width:104px;height:104px;border-radius:50%;object-fit:cover;
+    border:3px solid var(--signal);box-shadow:0 0 0 5px rgba(79,216,196,0.12), 0 0 24px rgba(79,216,196,0.28);
+  }
+  .id-badge-text b{display:block;font-family:var(--font-display);font-size:1.3rem;}
+  .id-badge-text span{color:var(--text-lo);font-size:0.95rem;font-family:var(--font-mono);}
+
+  .hero-lead{
+    font-family:var(--font-mono);font-size:0.92rem;color:var(--text-lo);
+    max-width:42ch;margin-bottom:1rem;letter-spacing:0.01em;
+  }
+  h1{font-family:var(--font-display);font-size:clamp(2.1rem, 4.2vw, 3.3rem);line-height:1.08;letter-spacing:-0.01em;margin-bottom:1.1rem;max-width:15ch;}
+  h1 .accent{color:var(--signal);}
+  .hero-sub{color:var(--text-lo);max-width:52ch;margin-bottom:1.6rem;font-size:1.02rem;}
+  .hero-actions{display:flex;gap:0.85rem;flex-wrap:wrap;margin-bottom:2rem;}
+  .btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 1.25rem;border-radius:10px;font-weight:600;font-size:0.92rem;transition:.18s ease;border:1px solid transparent;}
+  .btn-primary{background:linear-gradient(120deg, var(--signal), var(--violet));color:#0a0f1a;}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(79,216,196,0.22);}
+  .btn-secondary{border-color:var(--line);color:var(--text-hi);}
+  .btn-secondary:hover{border-color:var(--signal-dim);background:rgba(255,255,255,0.03);}
+  .stat-row{display:flex;gap:2.2rem;flex-wrap:wrap;}
+  .stat b{display:block;font-family:var(--font-mono);font-size:1.5rem;color:var(--text-hi);}
+  .stat span{font-size:0.82rem;color:var(--text-lo);}
+
+  section{padding:3.4rem 0;position:relative;z-index:1;}
+  .section-head{margin-bottom:1.6rem;display:flex;align-items:flex-start;gap:0.8rem;}
+  .section-head .icon{width:26px;height:26px;color:var(--signal);margin-top:0.2rem;}
+  .section-eyebrow{font-family:var(--font-mono);font-size:0.78rem;color:var(--signal);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.4rem;display:block;}
+  .section-title{font-family:var(--font-display);font-size:1.6rem;margin-bottom:0.4rem;}
+  .section-sub{color:var(--text-lo);font-size:0.96rem;max-width:60ch;}
+
+  .about-card{background:linear-gradient(160deg, var(--panel-raised), var(--panel));border:1px solid var(--line);border-radius:var(--radius);padding:1.6rem;}
+  .about-card p{color:var(--text-lo);}
+  .about-card p+p{margin-top:0.9rem;}
+  .about-card strong{color:var(--text-hi);}
+
+  .cert-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;}
+  @media (max-width:760px){.cert-grid{grid-template-columns:1fr;}}
+  .cert-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:1.4rem;}
+  .cert-card h3{font-family:var(--font-display);font-size:1rem;margin-bottom:0.9rem;color:var(--violet);}
+  .cert-card ul{list-style:none;display:grid;gap:0.6rem;}
+  .cert-card li{display:flex;align-items:flex-start;gap:0.55rem;color:var(--text-lo);font-size:0.9rem;}
+  .cert-card li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--violet);margin-top:0.5rem;flex-shrink:0;}
+
+  .domain-row{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .domain-pill{
+    display:inline-flex;align-items:center;gap:0.4rem;
+    font-family:var(--font-mono);font-size:0.78rem;padding:0.42rem 0.8rem 0.42rem 0.6rem;border-radius:999px;
+    border:1px solid var(--line);color:var(--text-lo);cursor:pointer;transition:.15s ease;background:transparent;
+  }
+  .domain-pill .icon{width:15px;height:15px;}
+  .domain-pill:hover{border-color:var(--signal-dim);color:var(--text-hi);}
+  .domain-pill.active{border-color:var(--signal);color:var(--signal);background:rgba(79,216,196,0.07);}
+
+  .project-grid{display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:1rem;perspective:1200px;}
+  @media (max-width:980px){.project-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  @media (max-width:620px){.project-grid{grid-template-columns:1fr;}}
+
+  .project-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:0;display:flex;flex-direction:column;
+    transform-style:preserve-3d;
+    transition:transform .12s ease-out, border-color .2s ease, box-shadow .2s ease;
+    will-change:transform;
+    overflow:hidden;
+  }
+  .project-card:hover{border-color:var(--signal-dim);box-shadow:0 18px 36px rgba(0,0,0,0.35);}
+  .card-scene{width:100%;height:76px;display:block;border-bottom:1px solid var(--line);background:rgba(255,255,255,0.015);}
+  .project-card-body{padding:1.15rem 1.3rem 1.3rem;display:flex;flex-direction:column;gap:0.7rem;flex:1;}
+  .project-tag-row{display:flex;align-items:center;justify-content:space-between;gap:0.45rem;}
+  .project-tag-row-left{display:flex;align-items:center;gap:0.45rem;}
+  .project-tag-row .icon{width:16px;height:16px;color:var(--signal);}
+  .project-tag{font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.04em;color:var(--signal);text-transform:uppercase;}
+  .project-card h3{font-family:var(--font-display);font-size:1.05rem;color:var(--text-hi);}
+  .project-card p{color:var(--text-lo);font-size:0.9rem;flex:1;}
+  .repo-link{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:34px;height:34px;border-radius:999px;flex-shrink:0;
+    border:1px solid var(--line);color:var(--text-hi);transition:.18s ease;
+  }
+  .repo-link .icon{width:17px;height:17px;}
+  .repo-link:hover{border-color:var(--signal);color:var(--signal);background:rgba(79,216,196,0.08);}
+  .project-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:0.7rem;}
+  .project-footer span{font-family:var(--font-mono);font-size:0.78rem;color:var(--text-lo);}
+  .project-card[data-hidden="true"]{display:none;}
+
+  .timeline{display:grid;gap:0.9rem;}
+  .role-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:1.3rem 1.4rem;}
+  .role-top{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:0.5rem;}
+  .role-title{font-family:var(--font-display);font-size:1.05rem;}
+  .role-company{color:var(--signal);font-size:0.9rem;font-weight:600;}
+  .role-duration{font-family:var(--font-mono);font-size:0.8rem;color:var(--text-lo);white-space:nowrap;}
+  .role-card ul{margin-left:1.1rem;color:var(--text-lo);font-size:0.92rem;}
+  .role-card li+li{margin-top:0.35rem;}
+
+  .edu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;}
+  @media (max-width:760px){.edu-grid{grid-template-columns:1fr;}}
+  .edu-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:1.3rem;}
+  .edu-card h3{font-family:var(--font-display);font-size:1rem;margin-bottom:0.3rem;}
+  .edu-card p{color:var(--text-lo);font-size:0.9rem;}
+
+  .contact-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;}
+  @media (max-width:760px){.contact-grid{grid-template-columns:1fr;}}
+  .contact-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:1.3rem;text-align:center;}
+  .contact-card .icon{width:20px;height:20px;color:var(--signal);margin:0 auto 0.5rem;}
+  .contact-card h3{font-family:var(--font-mono);font-size:0.78rem;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.5rem;}
+  .contact-card a{font-weight:600;font-size:0.95rem;}
+  .contact-card a:hover{color:var(--signal);}
+
+  footer{padding:2rem 0 2.4rem;text-align:center;color:var(--text-lo);font-size:0.85rem;position:relative;z-index:1;}
+</style>
+</head>
+<body>
+<div class="scanline-bg"></div>
+<div class="scan-sweep"></div>
+
+<header>
+  <nav class="wrap">
+    <div class="brand">Sri Nithya <span>Anne</span></div>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#certifications">Certifications</a></li>
+      <li><a href="#work">Projects</a></li>
+      <li><a href="#education">Education</a></li>
+    </ul>
+    <a class="nav-cta" href="#contact">Get in touch</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="id-badge">
+        <img src="profile.jpeg" alt="Sri Nithya Anne" class="id-photo" />
+        <div class="id-badge-text">
+          <b>Sri Nithya Anne</b>
+          <span>Security Engineer</span>
+        </div>
+      </div>
+      <p class="hero-lead">An engineer with a builder's mindset, a genuine passion for cybersecurity, and hands-on experience across multiple domains.</p>
+      <h1>14+ security tools, <span class="accent">spanning eight different domains.</span></h1>
+      <p class="hero-sub">
+        I taught myself this field by building the real thing: an OAuth
+        server that rejects forged tokens, a cloud scanner that catches
+        real misconfigurations, a SOC lab running live Sigma rules
+        against actual Elastic and Wazuh, and a DevSecOps pipeline that
+        fails a build on real Semgrep and ZAP findings. Several of them
+        had real bugs. I found them, fixed them, and wrote down exactly
+        what happened.
+      </p>
+      <div class="hero-actions">
+        <a href="#work" class="btn btn-primary">View the projects →</a>
+        <a href="https://github.com/Srinithya555" target="_blank" class="btn btn-secondary">GitHub profile</a>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><b>14</b><span>Security projects</span></div>
+        <div class="stat"><b>8</b><span>Domains covered</span></div>
+        <div class="stat"><b>400+</b><span>Passing tests written</span></div>
+      </div>
+    </div>
+    <div>
+      <canvas id="graph-canvas"></canvas>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="icon" data-icon="shield"></span>
+      <div>
+        <span class="section-eyebrow">About</span>
+        <h2 class="section-title">Grounded in networks, security, and hardware</h2>
+      </div>
+    </div>
+    <div class="about-card">
+      <p>
+        I hold a Master of Science in Electrical and Computer Engineering
+        from Northeastern University, with a concentration in Computer
+        Networks and Security, and a Bachelor of Technology in
+        Electronics and Communication Engineering from Geethanjali
+        College of Engineering and Technology. My path into security
+        started in hardware and embedded systems before moving into
+        enterprise software, which is part of why I like to understand
+        a system fully before I try to secure it. Along the way I've
+        worked across engineering roles at Waters Corporation, Cognizant
+        Technology Solutions, Intellectt Inc. (client: Abbott
+        Laboratories), Community Dreams Foundation, and Hysoc
+        Technologies.
+      </p>
+      <p>
+        Outside of formal roles, I've spent the past several months
+        building a deliberately broad portfolio: authentication and
+        authorization systems, cloud security posture tooling, a SOC
+        detection lab running real Sigma rules against Elastic and
+        Wazuh, DevSecOps pipelines gating real Semgrep and ZAP findings,
+        and an LLM security toolkit combining heuristics with a trained
+        classifier. <strong>Every project is tested, not just written,
+        and several turned up real bugs that I found, fixed, and
+        documented along the way.</strong>
+      </p>
+      <p>
+        I've also competed in a handful of cybersecurity CTFs, including
+        WiCyS events and Target's Cyber Defense CTF, and I keep coming
+        back to the format because it exposes gaps fast between what I
+        think I understand and what I actually do.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="certifications">
+  <div class="wrap">
+    <div class="section-head" style="--section-accent: var(--violet);">
+      <span class="icon" data-icon="badge" style="color:var(--violet);"></span>
+      <div>
+        <span class="section-eyebrow" style="color:var(--violet);">Certifications & Honors</span>
+        <h2 class="section-title">Credentials and recognition</h2>
+      </div>
+    </div>
+    <div class="cert-grid">
+      <div class="cert-card">
+        <h3>Certifications</h3>
+        <ul>
+          <li>Microsoft Certified: Azure Fundamentals</li>
+          <li>Zscaler Zero Trust Cyber Associate (ZTCA)</li>
+          <li>CompTIA Security+ (Skillsoft)</li>
+          <li>WiCyS CTF</li>
+          <li>Forage: Commonwealth Bank &amp; AIG "Shields Up" Cybersecurity Simulation</li>
+          <li>Northeastern University: Applying AI Technologies to the Workplace</li>
+        </ul>
+      </div>
+      <div class="cert-card">
+        <h3>Honors & Recognition</h3>
+        <ul>
+          <li>Alfond Scholarship</li>
+          <li>LEAD360 Graduate Leadership Program</li>
+          <li>NEU Young Gladiators</li>
+          <li>WiCyS Scholarship Recipient, 2023 &amp; 2024</li>
+          <li>WiCyS Vulnerability Disclosure Program (VDP) Participant</li>
+          <li>Target + WiCyS Cyber Defense CTF Participant</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="work">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="icon" data-icon="radar"></span>
+      <div>
+        <span class="section-eyebrow">Selected work</span>
+        <h2 class="section-title">14 projects across 8 security domains</h2>
+        <p class="section-sub">Filter by domain, or scroll through everything. Every repo includes a tested README with setup instructions, real output, and honest notes on what's verified.</p>
+      </div>
+    </div>
+
+    <div class="domain-row" id="domain-filters">
+      <button class="domain-pill active" data-domain="all">All</button>
+      <button class="domain-pill" data-domain="AppSec"><span class="icon" data-icon="lock"></span>AppSec</button>
+      <button class="domain-pill" data-domain="Cloud Security"><span class="icon" data-icon="cloud"></span>Cloud Security</button>
+      <button class="domain-pill" data-domain="Detection Engineering"><span class="icon" data-icon="radar"></span>Detection Engineering</button>
+      <button class="domain-pill" data-domain="DevSecOps"><span class="icon" data-icon="terminal"></span>DevSecOps</button>
+      <button class="domain-pill" data-domain="Network Security"><span class="icon" data-icon="network"></span>Network Security</button>
+      <button class="domain-pill" data-domain="Vulnerability Mgmt"><span class="icon" data-icon="bug"></span>Vulnerability Mgmt</button>
+      <button class="domain-pill" data-domain="Cryptography"><span class="icon" data-icon="key"></span>Cryptography</button>
+      <button class="domain-pill" data-domain="AI Security"><span class="icon" data-icon="chip"></span>AI Security</button>
+    </div>
+
+    <div class="project-grid" id="project-grid">
+
+      <div class="project-card" data-domain="AppSec">
+        <canvas class="card-scene" data-scene="lock"></canvas>
+        <div class="project-card-body">
+          <div class="project-tag-row">
+            <div class="project-tag-row-left"><span class="icon" data-icon="lock"></span><span class="project-tag">AppSec</span></div>
+          </div>
+          <h3>Hardened OAuth2/OIDC Provider</h3>
+          <p>Authorization Code + PKCE flow from scratch, RS256 JWTs, refresh token rotation with theft detection, and a full threat model documenting each hardening decision.</p>
+          <div class="project-footer">
+            <span>View repository</span>
+            <a class="repo-link" href="https://github.com/Srinithya555/oidc-provider/tree/main/oauth2-oidc-provider" target="_blank" title="View on GitHub" aria-label="View Hardened OAuth2/OIDC Provider on GitHub"><span class="icon" data-icon="repo"></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card" data-domain="AppSec">
+        <canvas class="card-scene" data-scene="lock"></canvas>
+        <div class="project-card-body">
+          <div class="project-tag-row">
+            <div class="project-tag-row-left"><span class="icon" data-icon="lock"></span><span class="project-tag">AppSec</span></div>
+          </div>
+          <h3>RBAC + ABAC Policy Engine</h3>
+          <p>Layered authorization on Open Policy Agent (Rego) — role-based gates plus attribute-based rules for ownership, time, and clearance level, with fail-closed design.</p>
+          <div class="project-footer">
+            <span>View repository</span>
+            <a class="repo-link" href="https://github.com/Srinithya555/rbac-abac-policy-engine" target="_blank" title="View on GitHub" aria-label="View RBAC + ABAC Policy Engine on GitHub"><span class="icon" data-icon="repo"></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card" data-domain="AppSec">
+        <canvas class="card-scene" data-scene="lock"></canvas>
+        <div class="project-card-body">
+          <div class="project-tag-row">
+            <div class="project-tag-row-left"><span class="icon" data-icon="lock"></span><span class="project-tag">AppSec</span></div>
+          </div>
+          <h3>JWT Security Scanner</h3>
+          <p>CLI that detects alg=none forgery, weak HMAC secrets via cryptographic brute force, kid-header injection, and algorithm-confusion risk.</p>
+          <div class="project-footer">
+            <span>View repository</span>
+            <a class="repo-link" href="https://github.com/Srinithya555/jwt-security-scanner" target="_blank" title="View on GitHub" aria-label="View JWT Security Scanner on GitHub"><span class="icon" data-icon="repo"></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card" data-domain="Cloud Security">
+        <canvas class="card-scene" data-scene="cloud"></canvas>
+        <div class="project-card-body">
+          <div class="project-tag-row">
+            <div class="project-tag-row-left"><span class="icon" data-icon="cloud"></span><span class="project-tag">Cloud Security</span></div>
+          </div>
+          <h3>AWS Cloud Security Posture Scanner</h3>
+          <p>Scans IAM, S3, and EC2 security groups for misconfigurations, scores risk, and maps findings to CIS AWS Foundations Benchmark controls.</p>
+          <div class="project-footer">
+            <span>View repository</span>
+            <a class="repo-link" href="https://github.com/Srinithya555/aws-cspm-scanner" target="_blank" title="View on GitHub" aria-label="View AWS Cloud Security Posture Scanner on GitHub"><span class="icon" data-icon="repo"></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card" data-domain="Cloud Security">
+        <canvas class="card-scene" data-scene="cloud"></canvas>
+        <div class="project-card-body">
+          <div class="project-tag-row">
+            <div class="project-tag-row-left"><span class="icon" data-icon="cloud"></span><span class="project-tag">Cloud Security</span></div>
+          </div>
+          <h3>Terraform / IaC Security Scanner</h3>
+          <p>A from-scratch HCL parser and rule engine catching public S3 ACLs, open security groups, and hardcoded secrets before terraform apply ever runs.</p>
+          <div class="project-footer">
+            <span>View repository</span>
+            <a class="repo-link" href="https://github.com/Srinithya555/terraform-iac-scanner" target="_blank" title="View on GitHub" aria-label="View Terraform / IaC Security Scanner on GitHub"><span class="icon" data-icon="repo"></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card" data-domain="Cloud Security">
+        <canvas class="card-scene" data-scene="cloud"></canvas>
+        <div class="project-card-body">
+          <div class="project-tag-row">
+            <div class="project-tag-row-left"><span class="icon" data-icon="cloud"></span><span class="project-tag">Cloud Security</span></div>
+          </div>
+          <h3>Container Security Scanner</h3>
+          <p>Static analysis for Dockerfiles and Kubernetes manifests — privileged containers, hostPath escapes, missing runAsNonRoot, and more, before deployment.</p>
+          <div class="project-footer">
+            <span>View repository</span>
+            <a class="repo-link" href="https://github.com/Srinithya555/container-security-scanner" target="_blank" title="View on GitHub" aria-label="View Container Security Scanner on GitHub"><span class="icon" data-icon="repo"></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card" data-domain="Detection Engineering">
+        <canvas class="card-scene" data-scene="radar"></canvas>
+        <div class="project-card-body">
+          <div class="project-tag-row">
+            <div class="project-tag-row-left"><span class="icon" data-icon="radar"></span><span class="project-tag">Detection Engineering</span></div>
+          </div>
+          <h3>SOC / SIEM Home Lab</h3>
+          <p>Real Sigma detection rules mapped to MITRE ATT&CK, verified against a live Elasticsearch, Kibana, and Wazuh manager stack via Docker Compose.</p>
+          <div class="project-footer">
+            <span>View repository</span>
+            <a class="repo-link" href="https://github.com/Srinithya555/soc-siem-lab" target="_blank" title="View on GitHub" aria-label="View SOC / SIEM Home Lab on GitHub"><span class="icon" data-icon="repo"></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card" data-domain="Detection Engineering">
+        <canvas class="card-scene" data-scene="radar"></canvas>
+        <div class="project-card-body">
+          <div class="project-tag-row">
+            <div class="project-tag-row-left"><span class="icon" data-icon="radar"></span><span class="project-tag">Detection Engineering</span></div>
+          </div>
+          <h3>Lightweight SOAR Engine</h3>
+          <p>YAML-playbook-driven response automation with a safe-by-default dry-run mode — disabling live actions requires a deliberate, explicit opt-in.</p>
+          <div class="project-footer">
+            <span>View repository</span>
+            <a class="repo-link" href="https://github.com/Srinithya555/lightweight-soar" target="_blank" title="View on GitHub" aria-label="View Lightweight SOAR Engine on GitHub"><span class="icon" data-icon="repo"></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card" data-domain="Detection Engineering">
+        <canvas class="card-scene" data-scene="radar"></canvas>
+        <div class="project-card-body">
+          <div class="project-tag-row">
+            <div class="project-tag-row-left"><span class="icon" data-icon="radar"></span><span class="project-tag">Detection Engineering</span></div>
+          </div>
+          <h3>Unified Security Dashboard</h3>
+          <p>Aggregates findings from the AWS scanner, JWT scanner, and RBAC audit log into one risk-scored view with a hand-built SVG risk gauge.</p>
+          <div class="project-footer">
+            <span>View repository</span>
+            <a class="repo-link" href="https://github.com/Srinithya555/security-dashboard" target="_blank" title="View on GitHub" aria-label="View Unified Security Dashboard on GitHub"><span class="icon" data-icon="repo"></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card" data-domain="DevSecOps">
+        <canvas class="card-scene" data-scene="terminal"></canvas>
+        <div class="project-card-body">
+          <div class="project-tag-row">
+            <div class="project-tag-row-left"><span class="icon" data-icon="terminal"></span><span class="project-tag">DevSecOps</span></div>
+          </div>
+          <h3>DevSecOps CI/CD Security Gate</h3>
+          <p>Semgrep and OWASP ZAP wired into GitHub Actions, gating builds on real SAST/DAST findings against an intentionally vulnerable demo app.</p>
+          <div class="project-footer">
+            <span>View repository</span>
+            <a class="repo-link" href="https://github.com/Srinithya555/devsecops-ci-gate" target="_blank" title="View on GitHub" aria-label="View DevSecOps CI/CD Security Gate on GitHub"><span class="icon" data-icon="repo"></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card" data-domain="Network Security">
+        <canvas class="card-scene" data-scene="network"></canvas>
+        <div class="project-card-body">
+          <div class="project-tag-row">
+            <div class="project-tag-row-left"><span class="icon" data-icon="network"></span><span class="project-tag">Network Security</span></div>
+          </div>
+          <h3>Suricata / IDS Toolkit</h3>
+          <p>Hand-built Ethernet/IP/TCP packet construction and a real PCAP writer, paired with genuine Suricata-format detection rules — verified in Wireshark.</p>
+          <div class="project-footer">
+            <span>View repository</span>
+            <a class="repo-link" href="https://github.com/Srinithya555/suricata-ids-toolkit" target="_blank" title="View on GitHub" aria-label="View Suricata / IDS Toolkit on GitHub"><span class="icon" data-icon="repo"></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card" data-domain="Vulnerability Mgmt">
+        <canvas class="card-scene" data-scene="bug"></canvas>
+        <div class="project-card-body">
+          <div class="project-tag-row">
+            <div class="project-tag-row-left"><span class="icon" data-icon="bug"></span><span class="project-tag">Vulnerability Mgmt</span></div>
+          </div>
+          <h3>Vulnerability Management Pipeline</h3>
+          <p>Parses real Nmap and Nuclei output, deduplicates cross-tool findings, and prioritizes by CVSS plus exploitability — tested against a live Nmap scan.</p>
+          <div class="project-footer">
+            <span>View repository</span>
+            <a class="repo-link" href="https://github.com/Srinithya555/Vulnerability-management-pipeline" target="_blank" title="View on GitHub" aria-label="View Vulnerability Management Pipeline on GitHub"><span class="icon" data-icon="repo"></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card" data-domain="Cryptography">
+        <canvas class="card-scene" data-scene="key"></canvas>
+        <div class="project-card-body">
+          <div class="project-tag-row">
+            <div class="project-tag-row-left"><span class="icon" data-icon="key"></span><span class="project-tag">Cryptography</span></div>
+          </div>
+          <h3>Applied Cryptography Toolkit</h3>
+          <p>Correct scrypt hashing, AES-256-GCM, and RSA-OAEP/PSS — paired with working proof of classic failures: ECB pattern leakage and GCM nonce reuse.</p>
+          <div class="project-footer">
+            <span>View repository</span>
+            <a class="repo-link" href="https://github.com/Srinithya555/applied-crypto-toolkit" target="_blank" title="View on GitHub" aria-label="View Applied Cryptography Toolkit on GitHub"><span class="icon" data-icon="repo"></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card" data-domain="AI Security">
+        <canvas class="card-scene" data-scene="chip"></canvas>
+        <div class="project-card-body">
+          <div class="project-tag-row">
+            <div class="project-tag-row-left"><span class="icon" data-icon="chip" style="color:var(--violet);"></span><span class="project-tag" style="color:var(--violet);">AI Security</span></div>
+          </div>
+          <h3>LLM Security Toolkit</h3>
+          <p>Prompt injection and jailbreak detection combining pattern heuristics with a trained ML classifier, plus sensitive-output leakage scanning.</p>
+          <div class="project-footer">
+            <span>View repository</span>
+            <a class="repo-link" href="https://github.com/Srinithya555/llm-security-toolkit" target="_blank" title="View on GitHub" aria-label="View LLM Security Toolkit on GitHub"><span class="icon" data-icon="repo"></span></a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="education">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="icon" data-icon="shield"></span>
+      <div>
+        <span class="section-eyebrow">Education</span>
+        <h2 class="section-title">Academic foundation</h2>
+      </div>
+    </div>
+    <div class="edu-grid">
+      <div class="edu-card">
+        <h3>M.S. Electrical and Computer Engineering</h3>
+        <p>Northeastern University, Boston, MA · Jan 2023 – May 2025</p>
+        <p>Concentration: Computer Networks and Security</p>
+        <p>GPA: 3.8 / 4.0</p>
+      </div>
+      <div class="edu-card">
+        <h3>B.Tech. Electronics and Communication Engineering</h3>
+        <p>Geethanjali College of Engineering and Technology · Jul 2016 – Aug 2020</p>
+        <p>GPA: 8.7 / 10.0</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="icon" data-icon="key"></span>
+      <div>
+        <span class="section-eyebrow">Contact</span>
+        <h2 class="section-title">Let's talk</h2>
+      </div>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <span class="icon" data-icon="mail"></span>
+        <h3>Email</h3>
+        <a href="mailto:srinithyaanne5@gmail.com">srinithyaanne5@gmail.com</a>
+      </div>
+      <div class="contact-card">
+        <span class="icon" data-icon="link"></span>
+        <h3>LinkedIn</h3>
+        <a href="https://www.linkedin.com/in/srinithya-anne/" target="_blank">linkedin.com/in/srinithya-anne</a>
+      </div>
+      <div class="contact-card">
+        <span class="icon" data-icon="terminal"></span>
+        <h3>GitHub</h3>
+        <a href="https://github.com/Srinithya555" target="_blank">github.com/Srinithya555</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>© 2026 Sri Nithya Anne</footer>
+
+<script>
+  const ICONS = {
+    shield: '<svg viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 5 3 8.5 7 9 4-.5 7-4 7-9V6Z"/></svg>',
+    lock: '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+    cloud: '<svg viewBox="0 0 24 24"><path d="M7 18a4 4 0 1 1 .6-7.96A5.5 5.5 0 0 1 18 11.5 3.5 3.5 0 0 1 17.5 18Z"/></svg>',
+    radar: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="12" r="6.5" stroke-dasharray="2 3"/><circle cx="12" cy="12" r="10"/></svg>',
+    terminal: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M13 15h4"/></svg>',
+    network: '<svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7.7 7.3 10.5 16M16.3 7.3 13.5 16M8 6h8"/></svg>',
+    bug: '<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="6"/><path d="M12 7V4M8 9 5 6M16 9l3-3M6 13H2M22 13h-4M8 18l-3 3M16 18l3 3"/></svg>',
+    key: '<svg viewBox="0 0 24 24"><circle cx="7" cy="15" r="4"/><path d="M10 12 19 3m0 0h-4m4 0v4M15 6l3 3"/></svg>',
+    chip: '<svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1"/><path d="M9 3v4M12 3v4M15 3v4M9 17v4M12 17v4M15 17v4M3 9h4M3 12h4M3 15h4M17 9h4M17 12h4M17 15h4"/></svg>',
+    mail: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>',
+    link: '<svg viewBox="0 0 24 24"><path d="M9 15 15 9M10 6l1.5-1.5a4 4 0 0 1 5.7 5.7L15.5 12M14 18l-1.5 1.5a4 4 0 0 1-5.7-5.7L8.5 12"/></svg>',
+    repo: '<svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="9" r="2.4"/><path d="M6 8.4V15.6M6 9c0 4 3 5 8 5.3M18 11.4V13"/></svg>',
+    badge: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M9 12.5 7 21l5-2.5L17 21l-2-8.5"/></svg>'
+  };
+  document.querySelectorAll('.icon[data-icon]').forEach(el=>{
+    const name = el.dataset.icon;
+    if(ICONS[name]) el.innerHTML = ICONS[name];
+  });
+
+  document.querySelectorAll('a[href^="#"]').forEach(link=>{
+    link.addEventListener('click', e=>{
+      const target = document.querySelector(link.getAttribute('href'));
+      if(target){ e.preventDefault(); target.scrollIntoView({behavior:'smooth', block:'start'}); }
+    });
+  });
+
+  const pills = document.querySelectorAll('.domain-pill');
+  const cards = document.querySelectorAll('.project-card');
+  pills.forEach(pill=>{
+    pill.addEventListener('click', ()=>{
+      pills.forEach(p=>p.classList.remove('active'));
+      pill.classList.add('active');
+      const domain = pill.dataset.domain;
+      cards.forEach(card=>{
+        const match = domain === 'all' || card.dataset.domain === domain;
+        card.dataset.hidden = match ? 'false' : 'true';
+      });
+    });
+  });
+
+  cards.forEach(card=>{
+    const MAX_TILT = 7;
+    card.addEventListener('mousemove', e=>{
+      const rect = card.getBoundingClientRect();
+      const px = (e.clientX - rect.left) / rect.width;
+      const py = (e.clientY - rect.top) / rect.height;
+      const rotY = (px - 0.5) * (MAX_TILT * 2);
+      const rotX = (0.5 - py) * (MAX_TILT * 2);
+      card.style.transform = `perspective(700px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(6px)`;
+    });
+    card.addEventListener('mouseleave', ()=>{
+      card.style.transform = 'perspective(700px) rotateX(0) rotateY(0) translateZ(0)';
+    });
+  });
+
+  // -----------------------------------------------------------------
+  // Signature scene: an analyst at the center of an active defense
+  // perimeter. A radar sweep scans continuously, protective measures
+  // (lock / shield / key) orbit the analyst, and incoming threats
+  // spawn at the edge, travel inward, and are intercepted right at
+  // the perimeter — never reaching the center. This is the literal
+  // story of the page: building and operating the things that stop
+  // attacks before they land.
+  // -----------------------------------------------------------------
+  (function(){
+    const canvas = document.getElementById('graph-canvas');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    function resize(){
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const SIGNAL = '#4fd8c4';
+    const EMBER = '#ff6b4a';
+    const PERSON = 'rgba(232,237,243,0.9)';
+
+    let threats = [];
+    let spawnCooldown = 60;
+    let sweepAngle = 0;
+    let flashPulse = 0;
+    let spawnCount = 0;
+
+    const orbiters = [
+      { kind:'lock',   angle:0,               speed:0.0016 },
+      { kind:'shield', angle:Math.PI*2/3,     speed:0.0013 },
+      { kind:'key',    angle:Math.PI*4/3,     speed:0.0019 }
+    ];
+    const outerOrbiters = [
+      { kind:'eye',      angle:Math.PI*0.3, speed:-0.0011 },
+      { kind:'terminal', angle:Math.PI*1.5, speed:-0.0009 }
+    ];
+
+    function spawnThreat(spawnR){
+      const angle = Math.random() * Math.PI * 2;
+      spawnCount += 1;
+      threats.push({
+        x: Math.cos(angle) * spawnR,
+        y: Math.sin(angle) * spawnR,
+        angle,
+        shape: spawnCount % 2 === 0 ? 'diamond' : 'triangle',
+        trail: [],
+        intercepted:false,
+        flashT:0,
+        dead:false
+      });
+    }
+
+    function drawPerson(cx, cy, scale, dpr){
+      const s = scale * dpr;
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      // desk line
+      ctx.strokeStyle = 'rgba(232,237,243,0.25)';
+      ctx.lineWidth = 2*dpr;
+      ctx.beginPath();
+      ctx.moveTo(-46*s, 34*s);
+      ctx.lineTo(46*s, 34*s);
+      ctx.stroke();
+
+      // monitor glow (pulses gently — "actively monitoring")
+      const glow = 0.35 + 0.25 * Math.sin(Date.now()*0.0025);
+      ctx.fillStyle = `rgba(79,216,196,${glow.toFixed(3)})`;
+      roundRect(-26*s, -2*s, 52*s, 30*s, 4*s);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(79,216,196,0.6)';
+      ctx.lineWidth = 1.4*dpr;
+      roundRect(-26*s, -2*s, 52*s, 30*s, 4*s);
+      ctx.stroke();
+      // scanlines on the monitor
+      ctx.strokeStyle = 'rgba(10,14,19,0.35)';
+      ctx.lineWidth = 1*dpr;
+      for(let i=1;i<4;i++){
+        ctx.beginPath();
+        ctx.moveTo(-24*s, -2*s + i*7*s);
+        ctx.lineTo(24*s, -2*s + i*7*s);
+        ctx.stroke();
+      }
+
+      // seated silhouette, behind the monitor
+      ctx.fillStyle = PERSON;
+      roundRect(-19*s, 30*s, 38*s, 40*s, 12*s); // torso
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(0, 16*s, 13*s, 0, Math.PI*2); // head
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function roundRect(x,y,w,h,r){
+      ctx.beginPath();
+      ctx.moveTo(x+r,y);
+      ctx.arcTo(x+w,y,x+w,y+h,r);
+      ctx.arcTo(x+w,y+h,x,y+h,r);
+      ctx.arcTo(x,y+h,x,y,r);
+      ctx.arcTo(x,y,x+w,y,r);
+      ctx.closePath();
+    }
+
+    function drawOrbitIcon(kind, x, y, s, dpr){
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.strokeStyle = SIGNAL;
+      ctx.fillStyle = SIGNAL;
+      ctx.lineWidth = 1.4*dpr;
+      ctx.shadowColor = SIGNAL;
+      ctx.shadowBlur = 6*dpr;
+
+      if(kind === 'lock'){
+        roundRect(-6*s, -1*s, 12*s, 9*s, 2*s);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(0, -1*s, 5*s, Math.PI, 0);
+        ctx.stroke();
+      } else if(kind === 'shield'){
+        ctx.beginPath();
+        ctx.moveTo(0, -8*s);
+        ctx.lineTo(7*s, -4*s);
+        ctx.lineTo(7*s, 3*s);
+        ctx.lineTo(0, 9*s);
+        ctx.lineTo(-7*s, 3*s);
+        ctx.lineTo(-7*s, -4*s);
+        ctx.closePath();
+        ctx.globalAlpha = 0.85;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      } else if(kind === 'key'){
+        ctx.beginPath();
+        ctx.arc(-4*s, 0, 4*s, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(8*s,0);
+        ctx.moveTo(5*s,0);
+        ctx.lineTo(5*s,3*s);
+        ctx.moveTo(8*s,0);
+        ctx.lineTo(8*s,3*s);
+        ctx.stroke();
+      } else if(kind === 'eye'){
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 8*s, 5*s, 0, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, 2.6*s, 0, Math.PI*2);
+        ctx.fill();
+      } else if(kind === 'terminal'){
+        roundRect(-8*s, -6*s, 16*s, 12*s, 2*s);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-4*s, -1.5*s);
+        ctx.lineTo(-1*s, 1*s);
+        ctx.lineTo(-4*s, 3.5*s);
+        ctx.stroke();
+      }
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    }
+
+    function drawCircuitGrid(w, h, t){
+      const spacing = Math.min(w,h) * 0.09;
+      const drift = Math.sin(t*0.15) * spacing * 0.15;
+      ctx.save();
+      ctx.fillStyle = 'rgba(79,216,196,0.14)';
+      for(let x = spacing*0.5; x < w; x += spacing){
+        for(let y = spacing*0.5; y < h; y += spacing){
+          const jitter = Math.sin((x+y)*0.01 + t*0.3) * 1.5;
+          ctx.beginPath();
+          ctx.arc(x + drift, y + jitter, 1*dpr, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+    }
+
+    function frame(){
+      requestAnimationFrame(frame);
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0,0,w,h);
+
+      const cx = w/2, cy = h*0.52;
+      const dim = Math.min(w,h);
+      const R_perimeter = dim * 0.30;
+      const R_spawn = dim * 0.50;
+      const R_orbit = dim * 0.185;
+      const R_outerOrbit = dim * 0.255;
+      const personScale = dim / 620;
+      const tSec = Date.now()/1000;
+
+      // --- ambient background circuit grid, behind everything ---
+      drawCircuitGrid(w, h, tSec);
+
+      // --- perimeter flash pulse (brightens briefly on every interception) ---
+      if(!prefersReduced) flashPulse = Math.max(0, flashPulse - 0.045);
+      const flashBoost = flashPulse * 0.45;
+
+      // --- outer perimeter rings (dashed, slow independent rotation) ---
+      [R_perimeter, R_perimeter*1.22].forEach((r, idx)=>{
+        ctx.save();
+        ctx.setLineDash([dim*0.012, dim*0.018]);
+        ctx.lineDashOffset = (prefersReduced ? 0 : Date.now()*0.02*(idx?-1:1));
+        const baseAlpha = idx===0 ? 0.4 : 0.18;
+        ctx.strokeStyle = `rgba(79,216,196,${(baseAlpha + (idx===0?flashBoost:0)).toFixed(3)})`;
+        ctx.lineWidth = (idx===0 ? 1.3+flashPulse*1.5 : 1.3)*dpr;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.restore();
+      });
+
+      // --- radar sweep wedge ---
+      if(!prefersReduced) sweepAngle += 0.014;
+      const sweepWidth = 0.5;
+      const grad = ctx.createRadialGradient(cx,cy,0,cx,cy,R_perimeter);
+      grad.addColorStop(0, 'rgba(79,216,196,0.22)');
+      grad.addColorStop(1, 'rgba(79,216,196,0)');
+      ctx.save();
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, R_perimeter, sweepAngle - sweepWidth, sweepAngle);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // --- incoming threats: spawn, travel inward, intercepted at perimeter ---
+      spawnCooldown -= 1;
+      if(spawnCooldown <= 0 && threats.length < 6){
+        spawnThreat(R_spawn);
+        spawnCooldown = 70 + Math.random()*90;
+      }
+      threats.forEach(t=>{
+        if(t.dead) return;
+        if(!t.intercepted){
+          if(!prefersReduced){
+            t.x -= Math.cos(t.angle) * dim * 0.0026;
+            t.y -= Math.sin(t.angle) * dim * 0.0026;
+            t.trail.push({x:t.x, y:t.y});
+            if(t.trail.length > 5) t.trail.shift();
+          }
+          const dist = Math.hypot(t.x, t.y);
+          if(dist <= R_perimeter){ t.intercepted = true; t.flashT = 0; flashPulse = 1; }
+
+          // fading motion trail behind the threat
+          t.trail.forEach((pos, i)=>{
+            const trailAlpha = (i/t.trail.length) * 0.35;
+            ctx.fillStyle = `rgba(255,107,74,${trailAlpha.toFixed(3)})`;
+            ctx.beginPath();
+            ctx.arc(cx+pos.x, cy+pos.y, 1.8*dpr, 0, Math.PI*2);
+            ctx.fill();
+          });
+
+          // draw threat head — triangle or diamond, pointed inward
+          const px = cx + t.x, py = cy + t.y;
+          ctx.save();
+          ctx.translate(px, py);
+          ctx.rotate(t.angle + Math.PI/2);
+          ctx.fillStyle = EMBER;
+          ctx.globalAlpha = 0.9;
+          ctx.beginPath();
+          if(t.shape === 'diamond'){
+            ctx.moveTo(0, -5.5*dpr);
+            ctx.lineTo(4*dpr, 0);
+            ctx.lineTo(0, 5.5*dpr);
+            ctx.lineTo(-4*dpr, 0);
+          } else {
+            ctx.moveTo(0, -5*dpr);
+            ctx.lineTo(4*dpr, 5*dpr);
+            ctx.lineTo(-4*dpr, 5*dpr);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        } else {
+          // interception flash: expanding, fading ring right at the perimeter
+          t.flashT += 1;
+          const px = cx + t.x, py = cy + t.y;
+          const flashR = t.flashT * 1.6 * dpr;
+          ctx.save();
+          ctx.strokeStyle = `rgba(255,107,74,${Math.max(0, 1 - t.flashT/22).toFixed(3)})`;
+          ctx.lineWidth = 2*dpr;
+          ctx.beginPath();
+          ctx.arc(px, py, flashR, 0, Math.PI*2);
+          ctx.stroke();
+          ctx.restore();
+          if(t.flashT > 22) t.dead = true;
+        }
+      });
+      threats = threats.filter(t=>!t.dead);
+
+      // --- outer orbit ring: monitoring measures, counter-rotating for depth ---
+      outerOrbiters.forEach(o=>{
+        if(!prefersReduced) o.angle += o.speed * 16;
+        const x = cx + Math.cos(o.angle) * R_outerOrbit;
+        const y = cy + Math.sin(o.angle) * R_outerOrbit * 0.55;
+        ctx.globalAlpha = 0.65;
+        drawOrbitIcon(o.kind, x, y, personScale, dpr);
+        ctx.globalAlpha = 1;
+      });
+
+      // --- inner orbiting protective measures ---
+      orbiters.forEach(o=>{
+        if(!prefersReduced) o.angle += o.speed * 16;
+        const x = cx + Math.cos(o.angle) * R_orbit;
+        const y = cy + Math.sin(o.angle) * R_orbit * 0.55; // slight ellipse for depth
+        drawOrbitIcon(o.kind, x, y, personScale, dpr);
+      });
+
+      // --- the analyst, at the center, being protected ---
+      drawPerson(cx, cy, personScale, dpr);
+    }
+    frame();
+  })();
+
+  // -----------------------------------------------------------------
+  // Per-project mini-scenes: each project card gets a small animated
+  // canvas matching its security domain, so every card has motion that
+  // means something specific to that kind of work — not the same
+  // animation repeated 14 times. All math is deterministic (a pure
+  // function of elapsed time), verified separately to stay within
+  // valid bounds, so there's no per-instance state to drift or leak.
+  // -----------------------------------------------------------------
+  (function(){
+    const canvases = Array.from(document.querySelectorAll('.card-scene'));
+    if(!canvases.length) return;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const SIGNAL = '#4fd8c4', EMBER = '#ff6b4a', DIM = 'rgba(255,255,255,0.18)';
+
+    const instances = canvases.map(c=>{
+      const ctx = c.getContext('2d');
+      function resize(){
+        const rect = c.getBoundingClientRect();
+        c.width = Math.max(1, rect.width * dpr);
+        c.height = Math.max(1, rect.height * dpr);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+      return { ctx, scene: c.dataset.scene };
+    });
+
+    function rrect(ctx,x,y,w,h,r){
+      ctx.beginPath();
+      ctx.moveTo(x+r,y);
+      ctx.arcTo(x+w,y,x+w,y+h,r);
+      ctx.arcTo(x+w,y+h,x,y+h,r);
+      ctx.arcTo(x,y+h,x,y,r);
+      ctx.arcTo(x,y,x+w,y,r);
+      ctx.closePath();
+    }
+
+    const SCENES = {
+      // AppSec — a lock repeatedly scanned; each pass gives a brief
+      // "verified" flash, representing continuous auth/authz testing.
+      lock(ctx,w,h,t){
+        const cx=w/2, cy=h*0.55;
+        const scanX = ((t*0.35)%1)*w;
+        const dist = Math.abs(scanX - cx);
+        const near = Math.max(0, 1 - dist/(w*0.09));
+
+        ctx.strokeStyle = 'rgba(79,216,196,0.35)';
+        ctx.lineWidth = 1*dpr;
+        ctx.beginPath(); ctx.moveTo(scanX, h*0.1); ctx.lineTo(scanX, h*0.9); ctx.stroke();
+
+        ctx.fillStyle = near>0.05 ? SIGNAL : 'rgba(232,237,243,0.8)';
+        rrect(ctx, cx-9*dpr, cy-2*dpr, 18*dpr, 15*dpr, 3*dpr); ctx.fill();
+        ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth=1.6*dpr;
+        ctx.beginPath(); ctx.arc(cx, cy-2*dpr, 7*dpr, Math.PI, 0); ctx.stroke();
+        if(near>0.05){
+          ctx.strokeStyle = `rgba(79,216,196,${(near*0.7).toFixed(3)})`;
+          ctx.beginPath(); ctx.arc(cx, cy, 16*dpr + near*6*dpr, 0, Math.PI*2); ctx.stroke();
+        }
+      },
+      // Cloud Security — resources drift down from the cloud; some
+      // pass a policy line cleanly, others are blocked right at it.
+      cloud(ctx,w,h,t){
+        const cy0 = h*0.18, gateY = h*0.78;
+        ctx.strokeStyle=SIGNAL; ctx.fillStyle='rgba(79,216,196,0.12)'; ctx.lineWidth=1.4*dpr;
+        ctx.beginPath();
+        ctx.arc(w*0.42, cy0, 8*dpr, Math.PI*0.5, Math.PI*1.6);
+        ctx.arc(w*0.56, cy0-3*dpr, 10*dpr, Math.PI*1.1, Math.PI*2.15);
+        ctx.arc(w*0.68, cy0, 7*dpr, Math.PI*1.4, Math.PI*0.6);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1*dpr;
+        ctx.beginPath(); ctx.moveTo(w*0.12,gateY); ctx.lineTo(w*0.88,gateY); ctx.stroke();
+
+        for(let i=0;i<3;i++){
+          const speed=0.28, phase=i/3, raw=t*speed+phase;
+          const cyc=Math.floor(raw), prog=raw-cyc;
+          const isPass = i%2===0;
+          const startY = cy0+8*dpr, gateProg=0.62;
+          let y, alpha;
+          if(isPass){ y=startY+prog*(h-startY); alpha=1-Math.max(0,(prog-0.8))/0.2; }
+          else if(prog<gateProg){ y=startY+prog*(gateY-startY); alpha=1; }
+          else { y=gateY; alpha=Math.max(0,1-(prog-gateProg)/(1-gateProg)); }
+          const x = w*(0.35+i*0.15);
+          ctx.fillStyle = (isPass? SIGNAL: EMBER);
+          ctx.globalAlpha = Math.max(0,Math.min(1,alpha));
+          rrect(ctx, x-3.5*dpr, y-3.5*dpr, 7*dpr, 7*dpr, 1.5*dpr); ctx.fill();
+          ctx.globalAlpha=1;
+        }
+      },
+      // Detection Engineering — a radar sweep brightening blips as it
+      // passes them, the same idea as the Sigma/SOC lab project.
+      radar(ctx,w,h,t){
+        const cx=w/2, cy=h/2, R=Math.min(w,h)*0.42;
+        const blips=[0.4,1.9,3.3,4.8,5.6];
+        const sweep=(t*1.1)%(Math.PI*2);
+        ctx.strokeStyle='rgba(79,216,196,0.3)'; ctx.lineWidth=1*dpr;
+        [R*0.55, R].forEach(r=>{ ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke(); });
+        const grad=ctx.createRadialGradient(cx,cy,0,cx,cy,R);
+        grad.addColorStop(0,'rgba(79,216,196,0.28)'); grad.addColorStop(1,'rgba(79,216,196,0)');
+        ctx.fillStyle=grad;
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,R,sweep-0.45,sweep); ctx.closePath(); ctx.fill();
+        blips.forEach(a=>{
+          let d=Math.abs(sweep-a); d=Math.min(d, Math.PI*2-d);
+          const bright=Math.max(0.25,1-d/0.5);
+          const bx=cx+Math.cos(a)*R*0.75, by=cy+Math.sin(a)*R*0.75;
+          ctx.fillStyle=`rgba(79,216,196,${bright.toFixed(3)})`;
+          ctx.beginPath(); ctx.arc(bx,by,2.4*dpr,0,Math.PI*2); ctx.fill();
+        });
+      },
+      // DevSecOps — a pipeline running stage by stage, gating the
+      // build the same way the real Semgrep/ZAP workflow does.
+      terminal(ctx,w,h,t){
+        const stages=4, cyc=Math.floor(t*0.55)%stages;
+        const y=h/2, startX=w*0.16, gap=(w*0.68)/(stages-1);
+        ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1.5*dpr;
+        ctx.beginPath(); ctx.moveTo(startX,y); ctx.lineTo(startX+gap*(stages-1),y); ctx.stroke();
+        for(let i=0;i<stages;i++){
+          const x=startX+gap*i;
+          const done = i<cyc, active = i===cyc;
+          ctx.fillStyle = done ? SIGNAL : active ? SIGNAL : 'rgba(255,255,255,0.15)';
+          ctx.globalAlpha = active ? 0.6+0.4*Math.sin(t*6) : 1;
+          ctx.beginPath(); ctx.arc(x,y,active?5*dpr:4*dpr,0,Math.PI*2); ctx.fill();
+          ctx.globalAlpha=1;
+        }
+      },
+      // Network Security — packets traveling a wire; most pass, some
+      // are dropped right at the filter gate, echoing the IDS project.
+      network(ctx,w,h,t){
+        const y=h/2, gateX=w*0.64;
+        ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1.4*dpr;
+        ctx.beginPath(); ctx.moveTo(w*0.08,y); ctx.lineTo(w*0.92,y); ctx.stroke();
+        ctx.strokeStyle=EMBER; ctx.lineWidth=1.6*dpr;
+        ctx.beginPath(); ctx.moveTo(gateX,y-12*dpr); ctx.lineTo(gateX,y+12*dpr); ctx.stroke();
+
+        for(let i=0;i<4;i++){
+          const speed=0.4, phase=i/4, raw=t*speed+phase;
+          const cyc=Math.floor(raw), prog=raw-cyc;
+          const isPass=i%2===0;
+          const gateProg=(gateX-w*0.08)/(w*0.84);
+          let x, alpha;
+          if(isPass){ x=w*0.08+prog*(w*0.84); alpha = prog>0.85 ? (1-prog)/0.15 : 1; }
+          else if(prog<gateProg){ x=w*0.08+prog*(w*0.84); alpha=1; }
+          else { x=gateX; alpha=Math.max(0,1-(prog-gateProg)/(1-gateProg)); }
+          ctx.fillStyle = isPass ? SIGNAL : EMBER;
+          ctx.globalAlpha = Math.max(0,Math.min(1,alpha));
+          rrect(ctx, x-3.5*dpr, y-3.5*dpr, 7*dpr, 7*dpr, 1.5*dpr); ctx.fill();
+          ctx.globalAlpha=1;
+        }
+      },
+      // Vulnerability Mgmt — a scanner sweeping top to bottom over a
+      // bug, the CVSS-ranked-findings idea from the vuln pipeline.
+      bug(ctx,w,h,t){
+        const cx=w/2, cy=h*0.55;
+        const scanY = ((t*0.3)%1)*h;
+        const dist=Math.abs(scanY-cy), near=Math.max(0,1-dist/(h*0.16));
+        ctx.strokeStyle='rgba(255,107,74,0.35)'; ctx.lineWidth=1*dpr;
+        ctx.beginPath(); ctx.moveTo(w*0.1,scanY); ctx.lineTo(w*0.9,scanY); ctx.stroke();
+
+        ctx.strokeStyle = near>0.1 ? EMBER : 'rgba(232,237,243,0.75)'; ctx.lineWidth=1.5*dpr;
+        ctx.beginPath(); ctx.arc(cx,cy,8*dpr,0,Math.PI*2); ctx.stroke();
+        const legs=[[0,-1],[-0.8,-0.5],[0.8,-0.5],[-1,0],[1,0],[-0.8,0.6],[0.8,0.6]];
+        legs.forEach(([dx,dy])=>{
+          ctx.beginPath(); ctx.moveTo(cx+dx*8*dpr, cy+dy*8*dpr);
+          ctx.lineTo(cx+dx*14*dpr, cy+dy*14*dpr); ctx.stroke();
+        });
+        if(near>0.1){
+          ctx.fillStyle=`rgba(255,107,74,${(near*0.9).toFixed(3)})`;
+          ctx.beginPath(); ctx.arc(cx+10*dpr, cy-10*dpr, 2.4*dpr, 0, Math.PI*2); ctx.fill();
+        }
+      },
+      // Cryptography — a rotating key with bits flipping state as they
+      // orbit, standing in for AES/RSA operating on data continuously.
+      key(ctx,w,h,t){
+        const cx=w/2, cy=h/2, angle=t*0.4;
+        ctx.save(); ctx.translate(cx,cy); ctx.rotate(angle*0.15);
+        ctx.strokeStyle=SIGNAL; ctx.fillStyle=SIGNAL; ctx.lineWidth=1.6*dpr;
+        ctx.beginPath(); ctx.arc(-9*dpr,0,5*dpr,0,Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-4*dpr,0); ctx.lineTo(11*dpr,0);
+        ctx.moveTo(6*dpr,0); ctx.lineTo(6*dpr,4*dpr);
+        ctx.moveTo(10*dpr,0); ctx.lineTo(10*dpr,4*dpr); ctx.stroke();
+        ctx.restore();
+
+        for(let i=0;i<4;i++){
+          const a = angle + i*(Math.PI/2);
+          const r = Math.min(w,h)*0.34;
+          const x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r*0.55;
+          const bit = Math.sin(a+i)>0;
+          ctx.fillStyle = bit ? SIGNAL : 'rgba(255,255,255,0.3)';
+          ctx.beginPath(); ctx.arc(x,y,2.2*dpr,0,Math.PI*2); ctx.fill();
+        }
+      },
+      // AI Security — a small activation sweeping through a node grid,
+      // occasionally flagged, mirroring the ML classifier's decisions.
+      chip(ctx,w,h,t){
+        const cols=3, rows=3;
+        const x0=w*0.28, x1=w*0.72, y0=h*0.28, y1=h*0.72;
+        const flagged = Math.floor(t/6)%3===0;
+        const sweepCol = ((t*0.6)% (cols+1));
+        for(let r=0;r<rows;r++){
+          for(let c=0;c<cols;c++){
+            const x = x0 + (x1-x0)*(c/(cols-1));
+            const y = y0 + (y1-y0)*(r/(rows-1));
+            if(c<cols-1){
+              const x2 = x0 + (x1-x0)*((c+1)/(cols-1));
+              const bright = Math.max(0, 1-Math.abs(sweepCol-(c+0.5))/1.1);
+              ctx.strokeStyle = bright>0.15 ? (flagged?`rgba(255,107,74,${bright.toFixed(2)})`:`rgba(79,216,196,${bright.toFixed(2)})`) : 'rgba(255,255,255,0.08)';
+              ctx.lineWidth=1.2*dpr;
+              ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x2, y0+(y1-y0)*(r/(rows-1))); ctx.stroke();
+            }
+            const nodeBright = Math.max(0.3, 1-Math.abs(sweepCol-c)/1.3);
+            ctx.fillStyle = flagged && c===cols-1 ? EMBER : SIGNAL;
+            ctx.globalAlpha = nodeBright;
+            ctx.beginPath(); ctx.arc(x,y,2.6*dpr,0,Math.PI*2); ctx.fill();
+            ctx.globalAlpha=1;
+          }
+        }
+      }
+    };
+
+    function loop(){
+      requestAnimationFrame(loop);
+      const t = prefersReduced ? 0 : Date.now()/1000;
+      instances.forEach(inst=>{
+        const fn = SCENES[inst.scene];
+        if(!fn) return;
+        inst.ctx.clearRect(0,0,inst.ctx.canvas.width, inst.ctx.canvas.height);
+        fn(inst.ctx, inst.ctx.canvas.width, inst.ctx.canvas.height, t);
+      });
+    }
+    loop();
+  })();
+</script>
+</body>
+</html>
